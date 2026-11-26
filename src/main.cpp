@@ -29,12 +29,12 @@ static void updateAllNoteTrails() {
     for (int i = 0; i < notes.size(); ++i) {
         auto* n = notes.get(i);
         if (!n || !n->get_noteData()) continue;
-        auto* go = n->get_gameObject();
+        auto go = n->get_gameObject();
         auto* tr = go->GetComponent(trType);
         if (!trailsEnabled) { if (tr) il2cpp_utils::RunMethod(tr, "set_enabled", false); continue; }
         if (!tr) {
             tr = go->AddComponent(trType);
-            if (auto* sh = UnityEngine::Shader::Find("Sprites/Default")) il2cpp_utils::RunMethod(tr, "set_material", UnityEngine::Material::New_ctor(sh));
+            if (auto sh = UnityEngine::Shader::Find("Sprites/Default")) il2cpp_utils::RunMethod(tr, "set_material", UnityEngine::Material::New_ctor(sh));
         }
         if (tr) {
             il2cpp_utils::RunMethod(tr, "set_enabled", true);
