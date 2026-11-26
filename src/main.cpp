@@ -23,7 +23,7 @@ static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 static bool trailsEnabled = true;
 static float trailTime = 0.25f;
 static float trailWidth = 0.45f;
-MAKE_HOOK_MATCH(NoteMovement_ManualUpdate, &GlobalNamespace::NoteMovement::ManualUpdate, void, GlobalNamespace::NoteMovement* self) {
+MAKE_HOOK_FIND_CLASS_UNSAFE_INSTANCE(NoteMovement_ManualUpdate, "", "NoteMovement", "ManualUpdate", void, GlobalNamespace::NoteMovement* self) {
     NoteMovement_ManualUpdate(self);
     if (!self) return;
     auto* go = self->get_gameObject();
