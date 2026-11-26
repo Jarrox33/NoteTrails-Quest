@@ -17,7 +17,7 @@
 
 static modloader::ModInfo modInfo{MOD_ID, VERSION, 0};
 
-MAKE_HOOK_MATCH(NoteMovement_ManualUpdate, &GlobalNamespace::NoteMovement::ManualUpdate, void, GlobalNamespace::NoteMovement* self) {
+MAKE_HOOK_FIND_CLASS_UNSAFE_INSTANCE(NoteMovement_ManualUpdate, "GlobalNamespace", "NoteMovement", "ManualUpdate", void, GlobalNamespace::NoteMovement* self) {
     NoteMovement_ManualUpdate(self);
     if (!self) return;
     auto go = self->get_gameObject();
@@ -43,7 +43,6 @@ MAKE_HOOK_MATCH(NoteMovement_ManualUpdate, &GlobalNamespace::NoteMovement::Manua
     }
     il2cpp_utils::RunMethod(tr, "set_enabled", true);
 }
-
 extern "C" void setup(CModInfo* info) {
     *info = modInfo.to_c();
     Paper::Logger::RegisterFileContextId(MOD_ID);
@@ -51,5 +50,5 @@ extern "C" void setup(CModInfo* info) {
 
 extern "C" void late_load() {
     il2cpp_functions::Init();
-    INSTALL_HOOK(Paper::Logger::WithContext<MOD_ID>(), NoteMovement_ManualUpdate);
+    INSTALL_HOOK(NoteMovement_ManualUpdate);
 }
