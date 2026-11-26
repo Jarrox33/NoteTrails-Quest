@@ -1,17 +1,19 @@
 #include "scotland2/shared/modloader.h"
 #include "beatsaber-hook/shared/utils/logging.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
+#include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "bsml/shared/BSML.hpp"
 #include "bsml/shared/BSML-Lite.hpp"
 #include "GlobalNamespace/GameNoteController.hpp"
 #include "GlobalNamespace/NoteData.hpp"
 #include "GlobalNamespace/ColorType.hpp"
 #include "UnityEngine/GameObject.hpp"
-#include "UnityEngine/TrailRenderer.hpp"
+#include "UnityEngine/Component.hpp"
 #include "UnityEngine/Material.hpp"
 #include "UnityEngine/Shader.hpp"
 #include "UnityEngine/Color.hpp"
 #include "UnityEngine/UI/VerticalLayoutGroup.hpp"
+#include "System/Type.hpp"
 
 #define MOD_ID "notetrails"
 #define VERSION "0.1.0"
@@ -26,16 +28,30 @@ MAKE_HOOK_MATCH(GameNoteController_Init, &GlobalNamespace::GameNoteController::I
     GameNoteController_Init(self, noteData, noteSpawnData, endRotation, uniformScale, rotateTowardsPlayer, useRandomRotation);
     if (!self || !noteData) return;
     auto* go = self->get_gameObject();
-    auto* tr = go->GetComponent<UnityEngine::TrailRenderer*>();
-    if (!trailsEnabled) { if (tr) tr->set_enabled(false); return; }
-    if (!tr) {
-        tr = go->AddComponent<UnityEngine::TrailRenderer*>();
-        if (auto* shader = UnityEngine::Shader::Find("Sprites/Default")) tr->set_material(UnityEngine::Material::New_ctor(shader));
+    auto* trType = System::Type::GetType("UnityEngine.TrailRenderer, UnityEngine.CoreModule");
+    if (!trType) return;
+    auto* tr = go->GetComponent(trType);
+    if (!trailsEnabled) {
+        if (tr) il2cpp_utils::RunMethod(tr, "set_enabled", false);
+        return;
     }
-    tr->Clear(); tr->set_enabled(true); tr->set_time(trailTime); tr->set_startWidth(trailWidth); tr->set_endWidth(0.0f);
+    if (!tr) {
+        tr = go->AddComponent(trType);
+        if (auto* shader = UnityEngine::Shader::Find("Sprites/Default")) {
+            il2cpp_utils::RunMethod(tr, "set_material", UnityEngine::Material::New_ctor(shader));
+        }
+    }
+    if (!tr) return;
+    il2cpp_utils::RunMethod(tr, "Clear");
+    il2cpp_utils::RunMethod(tr, "set_enabled", true);
+    il2cpp_utils::RunMethod(tr, "set_time", trailTime);
+    il2cpp_utils::RunMethod(tr, "set_startWidth", trailWidth);
+    il2cpp_utils::RunMethod(tr, "set_endWidth", 0.0f);
     bool isLeft = (noteData->colorType == GlobalNamespace::ColorType::ColorA);
     UnityEngine::Color col = isLeft ? UnityEngine::Color(1.0f, 0.12f, 0.18f, 0.85f) : UnityEngine::Color(0.12f, 0.55f, 1.0f, 0.85f);
-    tr->set_startColor(col); col.a = 0.0f; tr->set_endColor(col);
+    il2cpp_utils::RunMethod(tr, "set_startColor", col);
+    col.a = 0.0f;
+    il2cpp_utils::RunMethod(tr, "set_endColor", col);
 }
 
 static void didActivate(HMUI::ViewController* self, bool firstActivation, bool, bool) {
