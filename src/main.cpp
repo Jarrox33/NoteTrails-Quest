@@ -1,0 +1,34 @@
+python -c 'p="/data/data/com.termux/files/home/notetrails-qmod/src/main.cpp"; open(p,"w").write(open(p).read().replace("!trelsEnabled", "!trailsEnabled"))'
+
+cat << 'EOF' > ~/notetrails-qmod/.github/workflows/build.yml
+name: Build NoteTrails QMOD
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QPM & Ninja
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y ninja-build unzip
+          gh release download -R QuestPackageManager/QPM.CLI -p "qpm-linux-x64.zip" -D /tmp
+          sudo unzip -o /tmp/qpm-linux-x64.zip -d /usr/local/bin/
+          sudo chmod +x /usr/local/bin/qpm
+      - name: Resolve Dependencies & Build QMOD
+        run: |
+          qpm restore
+          qpm ndk resolve -d
+          cmake -G Ninja -DCMAKE_BUILD_TYPE="RelWithDebInfo" -B build
+          cmake --build build
+          qpm qmod zip
+      - name: Upload NoteTrails.qmod
+        uses: actions/upload-artifact@v4
+        with:
+          name: NoteTrails-qmod
+          path: NoteTrails.qmod
